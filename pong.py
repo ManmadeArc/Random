@@ -1,5 +1,13 @@
-import pygame
+import pickle
+import random
 
+import pygame
+import math
+
+from pygame import font
+
+
+import numpy as np
 
 
 class PONG:
@@ -17,6 +25,8 @@ class PONG:
     
     def gameLoop(self):
         terminarjuego=False
+        puntos=0
+        font = pygame.font.SysFont(None,25)
         while not terminarjuego:
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
@@ -24,36 +34,35 @@ class PONG:
             teclas= pygame.key.get_pressed()
             self.bar.ballcenterx+=self.bar.ballvelx
             self.bar.ballcentery+=self.bar.ballvely
-            print(self.bar.barx)            
+            msg = 'Puntuacion: ' + str(puntos)
+            screen_text = font.render(msg,True,(255,255,255))
+            self.gameDisplay.blit(screen_text,[10,300])           
             
             #si toca el techo, rebota hacia abajo
-            if (self.bar.ballcentery+self.bar.radio)>= (PONG.height-self.bar.ancho):
-                if self.bar.ballcenterx >=self.bar.barx and self.bar.ballcenterx<=(self.bar.barx+self.bar.largo):
-                    self.bar.ballvely= -self.bar.ballvely
+            if self.bar.ChoqueBarra():
+                self.bar.ballvely= -self.bar.ballvely
+                puntos+=1
+                self.bar.ballcenterx+=10
             #si toca la pared izquierda rebota a la derecha
-            if self.bar.ballcenterx >= PONG.width or self.bar.ballcenterx - self.bar.radio<=0:
+            if self.bar.Choquederecha():
                 self.bar.ballvelx =-self.bar.ballvelx
             
-            if self.bar.ballcentery<=0:
+            if self.bar.ChoqueArriba():
                 self.bar.ballvely=-self.bar.ballvely
             
-            if self.bar.ballcentery>PONG.width:
+            if self.bar.ChoqueAbajo():
                 terminarjuego=True 
             
             if teclas[pygame.K_LEFT]:
-                if self.bar.barx!=0:
-                    self.bar.barx-=10
-                    self.bar.centrox-=10
+                self.bar.MoverIzquierda()
             if teclas[pygame.K_RIGHT]:
-                if self.bar.barx!=(PONG.width-self.bar.largo):
-                    self.bar.barx+=10
-                    self.bar.centrox+=10
+                self.bar.Moverderecha()
             
             
             if self.bar.barx!=(PONG.width-self.bar.largo) or  self.bar.barx!=0:
                 self.bar.bar2x=self.bar.ballcenterx-(self.bar.largo/2)
         
-
+            print(self.bar.ballcentery, self.bar.ballcentery+self.bar.radio)
             self.bar.showBar2(self.bar.bar2x, self.bar.bar2y)
             self.bar.showBar(self.bar.barx,self.bar.bary)
             self.bar.showBall(self.bar.ballcenterx, self.bar.ballcentery)
@@ -94,6 +103,30 @@ class Bar:
         pygame.draw.rect(PONG.gameDisplay,PONG.white,[x,y,self.largo, self.ancho])
     def showBall(self,x,y):
         pygame.draw.circle(PONG.gameDisplay,PONG.white,(int(x),int(y)),self.radio)
+    def ChoqueBarra(self):
+        if (self.ballcentery+self.radio)>= (PONG.height-self.ancho):
+                if self.ballcenterx >=self.barx and self.ballcenterx<=(self.barx+self.largo):
+                    return True
+    def Choquederecha(self):
+        if self.ballcenterx >= PONG.width or self.ballcenterx - self.radio<=0:
+            return True
+    def ChoqueArriba(self):
+        if self.ballcentery<=self.ancho:
+            return True
+    def ChoqueAbajo(self):
+        if self.ballcentery+self.radio>PONG.height:
+             return True
+    def MoverIzquierda(self):
+        if self.barx!=0:
+            self.barx-=10
+            self.centrox-=10
+    def Moverderecha(self):
+        if self.barx!=(PONG.width-self.largo):
+            self.barx+=10
+            self.centrox+=10
+        
+
+
 
         
 
